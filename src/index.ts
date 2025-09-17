@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Request, Response, NextFunction} from "express"
 import mongoose from "mongoose";
 import compression from "compression";
 import helmet from "helmet";
@@ -20,6 +20,7 @@ import supplierRoutes from "./routes/supplier.routes"
 import supplierProductRoutes from "./routes/supplierProducts.routes"
 import userRoutes from "./routes/user.routes"
 import warehouseRoutes from "./routes/warehouse.routes"
+import HttpException from "./exceptions/HttpException";
 
 dotenv.config();
 mongoose.connect(
@@ -32,7 +33,7 @@ mongoose.connect(
 
 const app = express()
 app.use(express.json())
-app.use(compression)
+app.use(compression())
 app.use(morgan("dev"))
 app.use(helmet())
 app.use(cors())
@@ -51,6 +52,20 @@ app.use("/api/v1/supplier", supplierRoutes)
 app.use("/api/v1/supplierProducts", supplierProductRoutes)
 app.use("/api/v1/users", userRoutes)
 app.use("/api/v1/warehouses", warehouseRoutes)
+app.use((err: HttpException, req: Request, res: Response, next: NextFunction) => {
+    const errorStatus = err.status || 500
+    const errorMessage = err.message || "Something went wrong!!!"
+    return res.status(errorStatus).json({
+        success: false,
+        status: errorStatus,
+        message: errorMessage,
+        stack: err.stack
+    })
+})
+//bASE ROUTE TESTING
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Server is running" });
+})
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {

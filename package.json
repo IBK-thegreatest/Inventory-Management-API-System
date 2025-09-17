@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && cross-env NODE_ENV=production node dist/server.js",
-    "dev": "npm run build && cross-env NODE_ENV=development nodemon src/index.ts",
+    "dev": "npm run build && cross-env NODE_ENV=development nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && npx tsc-alias",
     "test": "jest --forceExit --detectOpenHandles"
   },
@@ -22,12 +22,14 @@
     "cors": "^2.8.5",
     "cross-env": "^10.0.0",
     "dotenv": "^17.2.2",
+    "email-validator": "^2.0.4",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
+    "password-validator": "^5.3.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
@@ -41,6 +43,7 @@
     "@types/node": "^24.3.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2"
   }
 }
