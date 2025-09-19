@@ -4,7 +4,7 @@
   "description": "This is an Inventory Management API system that houses the logic behind the functionalities of an Inventory System",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && cross-env NODE_ENV=production node dist/server.js",
+    "start": "cross-env NODE_ENV=production nodemon -r tsconfig-paths/register dist/index.js",
     "dev": "npm run build && cross-env NODE_ENV=development nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && npx tsc-alias",
     "test": "jest --forceExit --detectOpenHandles"
