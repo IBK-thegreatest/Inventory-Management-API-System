@@ -70,7 +70,7 @@ jobs:
         docker run -d \
           --name ${{ env.SERVICE_NAME }} \
           --restart unless-stopped \
-          -p 80:3000 \
+          -p 3000:3000 \
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
         
         # Clean up unused images
