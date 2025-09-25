@@ -36,13 +36,13 @@ jobs:
     # Build the Docker image
     - name: Build Docker image
       run: |
-        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }} .
+        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest .
       working-directory: ${{ env.main }}
 
     # Push the Docker image to DockerHub
     - name: Push to DockerHub
       run: |
-        docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }}
+        docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
 
     # Setup SSH and deploy to AWS EC2
     - name: Setup SSH
