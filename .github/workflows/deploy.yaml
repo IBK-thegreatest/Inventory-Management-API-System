@@ -78,6 +78,8 @@ jobs:
           --name ${{ env.SERVICE_NAME }} \
           --restart unless-stopped \
           -p 3000:3000 \
+          -e MONGO_URL="${{ secrets.MONGO_URL }}" \
+          -e JWT_SEC="${{ secrets.JWT_SEC }}" \
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
         
         # Clean up unused images
