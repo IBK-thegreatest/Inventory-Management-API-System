@@ -33,6 +33,13 @@ jobs:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Create .env file
+      run: |
+        cat << EOF > .env
+        MONGO_URL=${{ secrets.MONGO_URL }}
+        JWT_SEC=${{ secrets.JWT_SEC }}
+        EOF
+
     # Build the Docker image
     - name: Build Docker image
       run: |
