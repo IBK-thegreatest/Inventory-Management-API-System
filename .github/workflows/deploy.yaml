@@ -1,0 +1,84 @@
+name: Build, Publish to DockerHub and Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+  AWS_EC2_HOST: ${{ secrets.AWS_EC2_HOST }}
+  AWS_EC2_USER: ${{ secrets.AWS_EC2_USER }}
+  AWS_SSH_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+  main: .
+
+permissions:
+  contents: 'read'
+
+jobs:
+  build-publish-deploy:
+    name: Build, Publish to DockerHub, and Deploy to AWS EC2
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Login to DockerHub
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    # Build the Docker image
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }} -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest .
+      working-directory: ${{ env.main }}
+
+    # Push the Docker image to DockerHub
+    - name: Push to DockerHub
+      run: |
+        docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }}
+
+    # Setup SSH and deploy to AWS EC2
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ env.AWS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ env.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
+
+    # Deploy to AWS EC2
+    - name: Deploy to AWS EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ env.AWS_EC2_USER }}@${{ env.AWS_EC2_HOST }} << 'EOF'
+        # Login to DockerHub on EC2 instance
+        echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ env.DOCKERHUB_USERNAME }}" --password-stdin
+        
+        # Stop and remove existing container
+        docker stop ${{ env.SERVICE_NAME }} || true
+        docker rm ${{ env.SERVICE_NAME }} || true
+        
+        # Pull the latest image
+        docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
+        
+        # Run the new container
+        docker run -d \
+          --name ${{ env.SERVICE_NAME }} \
+          --restart unless-stopped \
+          -p 80:3000 \
+          ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
+        
+        # Clean up unused images
+        docker image prune -f
+        EOF
+
+    # Optional: Health check
+    - name: Health Check
+      run: |
+        sleep 30
+        curl -f http://${{ env.AWS_EC2_HOST }} || exit 1
