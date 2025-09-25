@@ -36,7 +36,7 @@ jobs:
     # Build the Docker image
     - name: Build Docker image
       run: |
-        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }} -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest .
+        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }} .
       working-directory: ${{ env.main }}
 
     # Push the Docker image to DockerHub
