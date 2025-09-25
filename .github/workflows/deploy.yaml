@@ -81,5 +81,5 @@ jobs:
     - name: Health Check
       run: |
         sleep 30
-        curl -f http://${{ env.AWS_EC2_HOST }} || exit 1
+        curl -f http://${{ env.AWS_EC2_HOST }}:3000 || exit 1
 
