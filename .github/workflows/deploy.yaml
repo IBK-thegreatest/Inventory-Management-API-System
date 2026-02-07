@@ -51,44 +51,43 @@ jobs:
       run: |
         docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
 
-    # Setup SSH and deploy to AWS EC2
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ env.AWS_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ env.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
+    # # Setup SSH and deploy to AWS EC2
+    # - name: Setup SSH
+    #   run: |
+    #     mkdir -p ~/.ssh
+    #     echo "${{ env.AWS_SSH_KEY }}" > ~/.ssh/id_rsa
+    #     chmod 600 ~/.ssh/id_rsa
+    #     ssh-keyscan -H ${{ env.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
 
-    # Deploy to AWS EC2
-    - name: Deploy to AWS EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.AWS_EC2_USER }}@${{ env.AWS_EC2_HOST }} << 'EOF'
-        # Login to DockerHub on EC2 instance
-        echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ env.DOCKERHUB_USERNAME }}" --password-stdin
+    # # Deploy to AWS EC2
+    # - name: Deploy to AWS EC2
+    #   run: |
+    #     ssh -o StrictHostKeyChecking=no ${{ env.AWS_EC2_USER }}@${{ env.AWS_EC2_HOST }} << 'EOF'
+    #     # Login to DockerHub on EC2 instance
+    #     echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ env.DOCKERHUB_USERNAME }}" --password-stdin
         
-        # Stop and remove existing container
-        docker stop ${{ env.SERVICE_NAME }} || true
-        docker rm ${{ env.SERVICE_NAME }} || true
+    #     # Stop and remove existing container
+    #     docker stop ${{ env.SERVICE_NAME }} || true
+    #     docker rm ${{ env.SERVICE_NAME }} || true
         
-        # Pull the latest image
-        docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
+    #     # Pull the latest image
+    #     docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
         
-        # Run the new container
-        docker run -d \
-          --name ${{ env.SERVICE_NAME }} \
-          --restart unless-stopped \
-          -p 3000:3000 \
-          -e MONGO_URL="${{ secrets.MONGO_URL }}" \
-          -e JWT_SEC="${{ secrets.JWT_SEC }}" \
-          ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
+    #     # Run the new container
+    #     docker run -d \
+    #       --name ${{ env.SERVICE_NAME }} \
+    #       --restart unless-stopped \
+    #       -p 3000:3000 \
+    #       -e MONGO_URL="${{ secrets.MONGO_URL }}" \
+    #       -e JWT_SEC="${{ secrets.JWT_SEC }}" \
+    #       ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
         
-        # Clean up unused images
-        docker image prune -f
-        EOF
+    #     # Clean up unused images
+    #     docker image prune -f
+    #     EOF
 
-    # Optional: Health check
-    - name: Health Check
-      run: |
-        sleep 30
-        curl -f http://${{ env.AWS_EC2_HOST }}:3000 || exit 1
-
+    # # Optional: Health check
+    # - name: Health Check
+    #   run: |
+    #     sleep 30
+    #     curl -f http://${{ env.AWS_EC2_HOST }}:3000 || exit 1
